@@ -30,7 +30,7 @@ db.once('open', async () => {
     const questions = await Question.insertMany([
         {
             "questiontext": "What was Meta Platforms Inc formerly known as?",
-            "answer": ["Facebook", "Twitter", "TikTok"],
+            "answers": ["Facebook", "Twitter", "TikTok"],
             "correctanswer": "FaceBook",
             "questiontype": "MultipleChoice",
             "questionname": "Question 1",
@@ -39,7 +39,7 @@ db.once('open', async () => {
         },
         {
             "questiontext": "Puerto Rico is located on which continent?",
-            "answer": ["America", "Asia", "Europe"],
+            "answers": ["America", "Asia", "Europe"],
             "correctanswer": "America",
             "questiontype": "Multiple Choice",
             "questionname": "Question 2",

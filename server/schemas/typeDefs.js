@@ -1,4 +1,4 @@
-const { GraphQLScalarType, Kind } = require('graphql');
+const { GraphQLScalarType, Kind } = require("graphql");
 
 const typeDefs = `#graphql
   type User {
@@ -11,10 +11,10 @@ const typeDefs = `#graphql
   }
 
   type Quiz {
-    quizID: ID!
-    createdAt: String!
-    owner: String!
-    questions: Question!
+    _id: ID
+    createdAt: String
+    owner: String
+    questions: [Question]
   }
 
   type QuizUser {
@@ -25,13 +25,15 @@ const typeDefs = `#graphql
   }
 
   type Question {
-    questiontext: String!
-    answers: [String!]!
-    correctAnswers: [String!]!
+    _id: ID
+    questiontext: String
+    answers: [String]
+    correctAnswers: [String]
     questiontype: String
   }
 
   type Answer {
+    _id: ID
     questionId: Question!
     userId: User!
     selectedanswer: [String!]!
@@ -51,6 +53,7 @@ const typeDefs = `#graphql
 
   type Query {
     users: [User]
+    questions: [Question]
     getQuizById(quizId: ID!): Quiz!
     getQuestionsByQuizId(quizId: ID!): Quiz!
     getAllQuizzes: [Quiz]
@@ -66,6 +69,7 @@ const typeDefs = `#graphql
     login(email: String!, password: String!): Auth
 
     // look to this: quizData: Object!
+    createQuestion(quizId: ID!, questionText: String, answers: [String], correctAnswers: [String], questiontype: String): Question
     createQuiz(quizData: Object!): Quiz
     updateQuiz(quizId: ID!, title: String!): Quiz
     createQuestion(quizId: ID!, questionData: Object!): Question
@@ -76,23 +80,22 @@ const typeDefs = `#graphql
 
   }
 `;
-createQuiz(quizData: {title: String, options: String[]}): Quiz
-
+// createQuiz(quizData: {title: String, options: String[]}): Quiz
 
 const dateScalar = new GraphQLScalarType({
-  name: 'Date',
-  description: 'Date custom scalar type',
+  name: "Date",
+  description: "Date custom scalar type",
   serialize(value) {
     if (value instanceof Date) {
       return value.getTime(); // Convert outgoing Date to integer for JSON
     }
-    throw Error('GraphQL Date Scalar serializer expected a `Date` object');
+    throw Error("GraphQL Date Scalar serializer expected a `Date` object");
   },
   parseValue(value) {
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       return new Date(value); // Convert incoming integer to Date
     }
-    throw new Error('GraphQL Date Scalar parser expected a `number`');
+    throw new Error("GraphQL Date Scalar parser expected a `number`");
   },
   parseLiteral(ast) {
     if (ast.kind === Kind.INT) {

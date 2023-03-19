@@ -16,7 +16,7 @@ const resolvers = {
     },
 
     // find questions related to quiz by quiz ID
-    // Map to display questions by quiz id 
+    // Map to display questions by quiz id
     getQuestionsByQuizId: async (parent, { quizId }) => {
       return Quiz.findOne({ _id: quizId }).populate('question');
     },
@@ -74,11 +74,14 @@ const resolvers = {
     users: async () => {
       return User.find();
     },
+    questions: async () => {
+      return Question.find();
+    },
   },
   Mutation: {
     // SIGN UP page
     addUser: async (parent, { username, firstname, lastname, email, password }) => {
-      const user = await User.create({ username,firstname, lastname, email, password });
+      const user = await User.create({ username, firstname, lastname, email, password });
       const token = signToken(user);
       return { token, user };
     },
@@ -90,61 +93,57 @@ const resolvers = {
       }
       const correctPw = await user.isCorrectPassword(password);
       if (!correctPw) {
-        throw new Error('Incorrect password!');
+        throw new Error("Incorrect password!");
       }
       const token = signToken(user);
       return { token, user };
     },
     // PROFILE/Create a quiz (1)
-    createQuiz: async (parent, { quizData }, context) => {
-      // Check if user is logged in
-      if (!context.user) {
-        throw new Error('You need to be logged in to create a quiz!');
-      }
-    
-      // Create new quiz document
-      const newQuiz = new Quiz({
-        title: quizData.title,
-        description: quizData.description,
-        owner: context.user._id,
-        questions: quizData.questions,
-      });
-    
-      // Find category by ID and push new quiz to quizzes array
-      const updatedCategory = await Category.findOneAndUpdate(
-        { _id: quizData.category },
-        { $push: { quizzes: newQuiz } },
-        { new: true }
-      );
-    
-      // Save new quiz document
-      await newQuiz.save();
-    
-      return newQuiz;
-    },
+    // createQuiz: async (parent, { quizData }, context) => {
+    //   // Check if user is logged in
+    //   if (!context.user) {
+    //     throw new Error("You need to be logged in to create a quiz!");
+    //   }
+
+    //   // Create new quiz document
+    //   const newQuiz = new Quiz({
+    //     title: quizData.title,
+    //     description: quizData.description,
+    //     owner: context.user._id,
+    //     questions: quizData.questions,
+    //   });
+
+    //   // Find category by ID and push new quiz to quizzes array
+    //   const updatedCategory = await Category.findOneAndUpdate({ _id: quizData.category }, { $push: { quizzes: newQuiz } }, { new: true });
+
+    //   // Save new quiz document
+    //   await newQuiz.save();
+
+    //   return newQuiz;
+    // },
 
     // update quiz if user is owner
-    updateQuiz: async (parent, { quizId, title }, { user }) => {
-      if (!user) {
-        throw new Error("Unauthorized");
-      }
+    // updateQuiz: async (parent, { quizId, title }, { user }) => {
+    //   if (!user) {
+    //     throw new Error("Unauthorized");
+    //   }
 
-      const quiz = await Quiz.findById(quizId);
+    //   const quiz = await Quiz.findById(quizId);
 
-      if (!quiz) {
-        throw new Error("Quiz not found");
-      }
+    //   if (!quiz) {
+    //     throw new Error("Quiz not found");
+    //   }
 
-      if (quiz.owner.toString() !== user.id) {
-        throw new Error("You are not the owner of this quiz");
-      }
+    //   if (quiz.owner.toString() !== user.id) {
+    //     throw new Error("You are not the owner of this quiz");
+    //   }
 
-      quiz.title = title;
+    //   quiz.title = title;
 
-      const updatedQuiz = await quiz.save();
+    //   const updatedQuiz = await quiz.save();
 
-      return updatedQuiz;
-    },
+    //   return updatedQuiz;
+    // },
 
     // create Question and push to Quiz
     // PROFILE/Create a quiz (question)
@@ -152,73 +151,73 @@ const resolvers = {
       if (!context.user) {
         throw new Error('You must be logged in to create a question');
       }
-    
+
       // Create the new question
       const newQuestion = await Question.create({
         ...questionData,
         owner: context.user._id
       });
-    
+
       // Add the new question to the quiz's `question` array
       const updatedQuiz = await Quiz.findOneAndUpdate(
         { _id: quizId, owner: context.user._id },
         { $push: { question: newQuestion._id } },
         { new: true }
       ).populate('question');
-    
+
       if (!updatedQuiz) {
         throw new Error('Quiz not found or you do not have permission to update it');
       }
-    
+
       return updatedQuiz;
     },
 
-    // Update question
-    updateQuestion: async (parent, { questionId, updatedQuestionData }, context) => {
-      // Check if the user is logged in and has permission to update the question.
-      if (!context.user) {
-        throw new Error('You must be logged in to update a question.');
-      }
-    
-      const question = await Question.findById(questionId);
-    
-      if (!question) {
-        throw new Error('Question not found.');
-      }
-    
-      // Update the question data with the new values.
-      // Object.assign is for update the properties of an existing object without having to create a new object from scratch
-      Object.assign(question, updatedQuestionData);
-    
-      // Save the updated question.
-      const updatedQuestion = await question.save();
-    
-      return updatedQuestion;
-    },
+    // // Update question
+    // updateQuestion: async (parent, { questionId, updatedQuestionData }, context) => {
+    //   // Check if the user is logged in and has permission to update the question.
+    //   if (!context.user) {
+    //     throw new Error('You must be logged in to update a question.');
+    //   }
 
-    // Save Answer
-    saveAnswer: async (parent, { answerData }, context) => {
-      // Check if user is authenticated
-      if (!context.user) {
-        throw new Error('You need to be logged in!');
-      }
-    
-      const { questionId, selectedAnswer, isCorrect } = answerData;
-    
-      // Create new answer document
-      const newAnswer = new Answer({
-        questionId,
-        userId: context.user._id,
-        selectedanswer: selectedAnswer,
-        isCorrect,
-      });
-    
-      // Save answer to database
-      const savedAnswer = await newAnswer.save();
-    
-      // Return saved answer document
-      return savedAnswer;
-    },
+    //   const question = await Question.findById(questionId);
+
+    //   if (!question) {
+    //     throw new Error('Question not found.');
+    //   }
+
+    //   // Update the question data with the new values.
+    //   // Object.assign is for update the properties of an existing object without having to create a new object from scratch
+    //   Object.assign(question, updatedQuestionData);
+
+    //   // Save the updated question.
+    //   const updatedQuestion = await question.save();
+
+    //   return updatedQuestion;
+    // },
+
+    // // Save Answer
+    // saveAnswer: async (parent, { answerData }, context) => {
+    //   // Check if user is authenticated
+    //   if (!context.user) {
+    //     throw new Error('You need to be logged in!');
+    //   }
+
+    //   const { questionId, selectedAnswer, isCorrect } = answerData;
+
+    //   // Create new answer document
+    //   const newAnswer = new Answer({
+    //     questionId,
+    //     userId: context.user._id,
+    //     selectedanswer: selectedAnswer,
+    //     isCorrect,
+    //   });
+
+    //   // Save answer to database
+    //   const savedAnswer = await newAnswer.save();
+
+    //   // Return saved answer document
+    //   return savedAnswer;
+    // },
 
     // DELETE Quiz
     deleteQuiz: async (parent, { quizId }, context) => {
